@@ -184,26 +184,52 @@
 
 // export default SignUp;
 import React from "react";
-import { Link } from "react-router-dom"; // Import Link component
+import { Link, Navigate, useLocation, useNavigate } from "react-router-dom"; // Import Link component
 import Login from "./Login";
 import { useForm } from "react-hook-form";
+import axios from "axios";
+import toast from "react-hot-toast";
+
 
 function SignUp() {
+
+  const location=useLocation()
+  const navigate=useNavigate()
+
+  const from=location.state?.from?.pathname || "/"
   const {
     register,
     handleSubmit,
     formState: { errors },
   } = useForm();
 
-  // onSubmit function for handling form data
-  const onSubmit = (data) => {
-    console.log(data);
-    // You can add any form submission logic here (e.g., API calls)
+
+  const onSubmit = async (data) => {
+   const userInfo={
+    fullname:data.fullname,
+    email:data.email,
+    password:data.password
+   }
+   await axios.post("http://localhost:3047/user/SignUp",userInfo)
+   .then((res)=>{
+    console.log(res.data)
+    if(res.data)
+    {
+      toast.success("Sign up successfully");
+      navigate(from,{replace:true});
+     
+    }
+    localStorage.setItem("Users",JSON.stringify(res.data.user))
+   }).catch((err)=>{
+    console.log(err)
+    toast.error("Error"+err.response.data.message)
+   })
+
   };
 
   return (
     <div className="min-h-screen flex justify-center items-center bg-gray-50">
-      {/* Sign Up Form */}
+  
       <div className="w-full max-w-lg p-6 bg-white shadow-md rounded-md border border-gray-300">
         <div className="modal-box dark:bg-slate-900 dark:text-white dark:border">
           <div className="flex justify-end">
@@ -213,7 +239,7 @@ function SignUp() {
           </div>
           <h3 className="font-bold text-lg text-center">Sign Up</h3>
 
-          {/* The form wrapper */}
+ 
           <form onSubmit={handleSubmit(onSubmit)} className="mt-6 space-y-4">
             <div className="space-y-2">
               <label htmlFor="name" className="text-sm text-gray-700">Name</label>
@@ -222,9 +248,9 @@ function SignUp() {
                 type="text"
                 placeholder="Enter your full name"
                 className="w-full px-3 py-2 border rounded-md outline-none focus:ring-2 focus:ring-blue-500"
-                {...register("Name", { required: "Name is required" })}
+                {...register("fullname", { required: "Name is required" })}
               />
-              {errors.Name && (
+              {errors.fullname && (
                 <p className="text-red-500 text-xs">{errors.Name.message}</p>
               )}
             </div>
@@ -263,7 +289,7 @@ function SignUp() {
               )}
             </div>
 
-            {/* Submit button */}
+            
             <div className="flex justify-center mt-6">
               <button
                 type="submit"
@@ -274,7 +300,7 @@ function SignUp() {
             </div>
           </form>
 
-          {/* Login Link Section */}
+          
           <div className="mt-6 text-center">
             <p className="text-sm text-gray-700">
               Have an account?{" "}
